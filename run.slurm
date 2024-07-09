@@ -4,9 +4,9 @@
 #SBATCH --account=ic084
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --qos=short
+#SBATCH --qos=standard
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=10
+#SBATCH --cpus-per-task=5
 
 cd $SLURM_SUBMIT_DIR
 
