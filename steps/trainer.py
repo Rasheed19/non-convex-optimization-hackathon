@@ -5,6 +5,7 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 from torchsummary import summary
 from typing import Any
+from torchvision import models
 
 from utils.constants import NUM_CLASSES
 from utils.optimizer import get_optimizer
@@ -45,9 +46,8 @@ class DeepNN(nn.Module):
         #     nn.Linear(128 * 7 * 7, 512),
         #     nn.Linear(512, NUM_CLASSES),
         # )
-        nn.Sequential(
-            nn.Linear(1920, 1024),
-            nn.LeakyReLU(),
+        self.model = nn.Sequential(
+            nn.Linear(3 * 224 * 224, 1024),
             nn.Linear(1024, NUM_CLASSES),
         )
 
@@ -64,8 +64,18 @@ def model_trainer(
     loss_function: Any = nn.CrossEntropyLoss(),
 ) -> nn.Module:
 
-    model = DeepNN().to(device=device)
+    # classifier = nn.Sequential(
+    #     nn.Linear(1000, 1024),
+    #     nn.LeakyReLU(),
+    #     nn.Linear(1024, NUM_CLASSES),
+    # )
+    model = models.squeezenet1_0(weights=None)  # DeepNN().to(device=device)
+    # model.classifier = classifier
 
+    print(summary(model, (3, 224, 224)))
+
+    # print(model)
+    # print(len(model))
     # optimization set up
     optimizer_params["params"] = model.parameters()
     optimizer = get_optimizer(
@@ -73,7 +83,7 @@ def model_trainer(
     )
 
     for epoch in range(epochs):  # train for 10 epochs
-        for batch in training_data:
+        for i, batch in enumerate(training_data):
             X, y = batch
             X, y = X.to(device), y.to(device)
             yhat = model(X)
@@ -84,7 +94,9 @@ def model_trainer(
             loss.backward()
             optimizer.step()
 
-        print(f"Epoch: {epoch}, loss: {loss.item()}")
+            print(f"At epoch: {epoch + 1} and batch: {i + 1}")
+
+        print(f"Epoch: {epoch + 1}, loss: {loss.item()}")
 
     #     # Calculate and accumulate accuracy metric across all batches
     #     y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
