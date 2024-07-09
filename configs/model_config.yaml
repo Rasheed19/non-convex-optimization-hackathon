@@ -1,0 +1,6 @@
+epochs: 200
+optimizers:
+  adam:
+    lr: 0.001
+  sgd:
+    lr: 0.001
