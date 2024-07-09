@@ -45,6 +45,8 @@ def main(
 
         return None
 
+    print(MODEL_CONFIG["optimizers"][optimizer_name])
+
     training_pipeline(
         optimizer_name=optimizer_name,
         optimizer_params=MODEL_CONFIG["optimizers"][optimizer_name],

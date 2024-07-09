@@ -14,36 +14,41 @@ class DeepNN(nn.Module):
 
     def __init__(self) -> None:
         super().__init__()
-        self.model = nn.Sequential(
-            nn.Conv2d(
-                in_channels=3,
-                out_channels=8,
-                kernel_size=3,
-                padding=1,
-            ),
-            nn.Conv2d(
-                in_channels=8,
-                out_channels=16,
-                kernel_size=3,
-            ),
-            nn.Conv2d(
-                in_channels=16,
-                out_channels=32,
-                kernel_size=3,
-            ),
-            nn.Conv2d(
-                in_channels=32,
-                out_channels=64,
-                kernel_size=3,
-            ),
-            nn.Conv2d(
-                in_channels=64,
-                out_channels=128,
-                kernel_size=3,
-            ),
-            nn.MaxPool2d(kernel_size=2, stride=2, padding=0),
-            nn.Linear(128 * 7 * 7, 512),
-            nn.Linear(512, NUM_CLASSES),
+        # self.model = nn.Sequential(
+        #     nn.Conv2d(
+        #         in_channels=3,
+        #         out_channels=8,
+        #         kernel_size=3,
+        #         padding=1,
+        #     ),
+        #     nn.Conv2d(
+        #         in_channels=8,
+        #         out_channels=16,
+        #         kernel_size=3,
+        #     ),
+        #     nn.Conv2d(
+        #         in_channels=16,
+        #         out_channels=32,
+        #         kernel_size=3,
+        #     ),
+        #     nn.Conv2d(
+        #         in_channels=32,
+        #         out_channels=64,
+        #         kernel_size=3,
+        #     ),
+        #     nn.Conv2d(
+        #         in_channels=64,
+        #         out_channels=128,
+        #         kernel_size=3,
+        #     ),
+        #     nn.MaxPool2d(kernel_size=2, stride=2, padding=0),
+        #     nn.Linear(128 * 7 * 7, 512),
+        #     nn.Linear(512, NUM_CLASSES),
+        # )
+        nn.Sequential(
+            nn.Linear(1920, 1024),
+            nn.LeakyReLU(),
+            nn.Linear(1024, NUM_CLASSES),
         )
 
     def forward(self, x):
@@ -52,7 +57,7 @@ class DeepNN(nn.Module):
 
 def model_trainer(
     training_data: DataLoader,
-    optimizaer_name: str,
+    optimizer_name: str,
     optimizer_params: dict,
     epochs: int,
     device: str,
@@ -64,7 +69,7 @@ def model_trainer(
     # optimization set up
     optimizer_params["params"] = model.parameters()
     optimizer = get_optimizer(
-        optimizer_name=optimizaer_name, optimizer_params=optimizer_params
+        optimizer_name=optimizer_name, optimizer_params=optimizer_params
     )
 
     for epoch in range(epochs):  # train for 10 epochs

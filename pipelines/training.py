@@ -15,7 +15,7 @@ def training_pipeline(
 
     _ = model_trainer(
         training_data=training_data,
-        optimizaer_name=optimizer_name,
+        optimizer_name=optimizer_name,
         optimizer_params=optimizer_params,
         epochs=epochs,
         device=device,
