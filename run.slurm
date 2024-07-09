@@ -1,10 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=team4A
-#SBATCH --time=1:00:00
 #SBATCH --account=ic084
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --qos=standard
+#SBATCH --qos=short
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=5
 
