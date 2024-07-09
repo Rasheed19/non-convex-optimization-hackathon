@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=team4A
 #SBATCH --account=ic084
-#SBATCH --time=1:00:00
+#SBATCH --time=10:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --qos=gpu
