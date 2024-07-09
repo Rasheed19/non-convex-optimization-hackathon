@@ -17,17 +17,33 @@ class DeepNN(nn.Module):
         self.model = nn.Sequential(
             nn.Conv2d(
                 in_channels=3,
-                out_channels=16,
+                out_channels=8,
                 kernel_size=3,
                 padding=1,
             ),
-            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=8,
+                out_channels=16,
+                kernel_size=3,
+            ),
+            nn.Conv2d(
+                in_channels=16,
+                out_channels=32,
+                kernel_size=3,
+            ),
             nn.Conv2d(
                 in_channels=32,
                 out_channels=64,
-                kernel_size=(3, 3),
+                kernel_size=3,
             ),
-            nn.Linear(in_features=220, out_features=NUM_CLASSES),
+            nn.Conv2d(
+                in_channels=64,
+                out_channels=128,
+                kernel_size=3,
+            ),
+            nn.MaxPool2d(kernel_size=2, stride=2, padding=0),
+            nn.Linear(128 * 7 * 7, 512),
+            nn.Linear(512, NUM_CLASSES),
         )
 
     def forward(self, x):
@@ -43,9 +59,7 @@ def model_trainer(
     loss_function: Any = nn.CrossEntropyLoss(),
 ) -> nn.Module:
 
-    model = hub.load("pytorch/vision:v0.10.0", "squeezenet1_0", pretrained=False)
-
-    # print(summary(model, (3, 224, 224)))
+    model = DeepNN().to(device=device)
 
     # optimization set up
     optimizer_params["params"] = model.parameters()
