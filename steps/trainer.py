@@ -50,7 +50,7 @@ def single_epoch_training(
 
     train_loss, train_acc = 0.0, 0.0
 
-    for i, (X, y) in train_data:
+    for i, (X, y) in enumerate(train_data):
         images, labels = X.to(device), y.to(device)
 
         y_pred = model(images)
@@ -88,7 +88,7 @@ def single_epoch_testing(
     test_loss, test_acc = 0.0, 0.0
 
     with torch.inference_mode():
-        for i, (X, y) in test_data:
+        for i, (X, y) in enumerate(test_data):
             images, labels = X.to(device), y.to(device)
 
             test_pred_logits = model(images)
