@@ -129,6 +129,7 @@ def training_GSAM(
             train_acc += (y_pred_class == labels).sum().item() / len(y_pred)
             scheduler[0].step()
             optimizer.update_rho_t()
+
         exp.log_metric("train_loss_in_epoch", train_loss, step=i+1, epoch=epoch+1)
 
 def single_epoch_training(
@@ -247,11 +248,13 @@ def model_trainer(
     optimizer_params["params"] = model.parameters()
 
     if optimizer_name == 'gsam':
-        scheduler_ = CosineScheduler(T_max=epochs*len(train_data), max_value=optimizer_params['lr'], min_value=0.0, optimizer=SGD)
+        base_optimizer = SGD(model.parameters(), lr=optimizer_params['lr'], momentum=optimizer_params['momentum'], weight_decay=optimizer_params['weight_decay'])
+        
+        scheduler_ = CosineScheduler(T_max=epochs*len(train_data), max_value=optimizer_params['lr'], min_value=0.0, optimizer=base_optimizer)
         rho_scheduler = ProportionScheduler(pytorch_lr_scheduler=scheduler_, max_lr=optimizer_params['lr'], min_lr=0.0,
             max_value=optimizer_params['rho_max'], min_value=optimizer_params['rho_min'])
         scheduler = (scheduler_, rho_scheduler)
-        base_optimizer = SGD(model.parameters(), lr=optimizer_params['lr'], momentum=optimizer_params['momentum'], weight_decay=optimizer_params['weight_decay'])
+        
         optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, model=model, gsam_alpha=optimizer_params['alpha'], rho_scheduler=scheduler[1], adaptive=optimizer_params['adaptive'])
 
     else:
