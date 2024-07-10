@@ -117,7 +117,12 @@ def model_trainer(
     loss_function: nn.Module = nn.CrossEntropyLoss(),
 ) -> tuple[nn.Module, dict]:
 
-    model = create_model()
+    model = create_model().to(device)
+
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!\n\n")
+        model = nn.DataParallel(model)
+
     optimizer_params["params"] = model.parameters()
     optimizer = get_optimizer(
         optimizer_name=optimizer_name, optimizer_params=optimizer_params
