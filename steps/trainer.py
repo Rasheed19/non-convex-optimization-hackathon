@@ -43,13 +43,14 @@ def single_epoch_training(
     loss_function: nn.Module,
     optimizer: Optimizer,
     device: str,
+    epoch: int
 ) -> tuple[float]:
 
     model.train()
 
     train_loss, train_acc = 0.0, 0.0
 
-    for X, y in train_data:
+    for i, (X, y) in train_data:
         images, labels = X.to(device), y.to(device)
 
         y_pred = model(images)
@@ -66,6 +67,8 @@ def single_epoch_training(
         y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
         train_acc += (y_pred_class == labels).sum().item() / len(y_pred)
 
+        exp.log_metric("train_loss", train_loss, step=i+1, epoch=epoch+1)
+
     train_loss = train_loss / len(train_data)
     train_acc = train_acc / len(train_data)
 
@@ -77,6 +80,7 @@ def single_epoch_testing(
     test_data: DataLoader,
     loss_function: nn.Module,
     device: str,
+    epoch: int
 ) -> tuple[float]:
 
     model.eval()
@@ -84,7 +88,7 @@ def single_epoch_testing(
     test_loss, test_acc = 0.0, 0.0
 
     with torch.inference_mode():
-        for X, y in test_data:
+        for i, (X, y) in test_data:
             images, labels = X.to(device), y.to(device)
 
             test_pred_logits = model(images)
@@ -99,6 +103,8 @@ def single_epoch_testing(
             test_acc += (test_pred_labels == labels).sum().item() / len(
                 test_pred_labels
             )
+
+            exp.log_metric("test_loss", test_loss, step=i+1, epoch=epoch+1)
 
     test_loss = test_loss / len(test_data)
     test_acc = test_acc / len(test_data)
@@ -161,9 +167,10 @@ def model_trainer(
             loss_function=loss_function,
             optimizer=optimizer,
             device=device,
+            epoch=epoch
         )
         test_loss, test_acc = single_epoch_testing(
-            model=model, test_data=test_data, loss_function=loss_function, device=device
+            model=model, test_data=test_data, loss_function=loss_function, device=device, epoch=epoch
         )
 
         print(
@@ -178,6 +185,11 @@ def model_trainer(
         history["train_accuracy"].append(train_acc)
         history["test_loss"].append(test_loss)
         history["test_accuracy"].append(test_acc)
+
+        exp.log_metric("train_loss", train_loss, epoch=epoch+1)
+        exp.log_metric("test_loss", test_loss, epoch=epoch+1)
+        exp.log_metric("train_accuracy", train_accuracy, epoch=epoch+1)
+        exp.log_metric("test_accuracy", test_accuracy, epoch=epoch+1)
 
     torch.save(
         obj=model.state_dict(),
