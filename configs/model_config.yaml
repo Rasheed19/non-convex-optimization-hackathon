@@ -3,3 +3,16 @@ optimizers:
     lr: 0.001
   sgd:
     lr: 0.001
+  sgld:
+    lr: 0.001
+  sam:
+    lr: 0.001
+    rho: 0.05
+  gsam:
+    lr: 0.01
+    rho_max: 0.04
+    rho_min: 0.02
+    alpha: 0.1
+    momentum: 0.9
+    weight_decay: 0.0005
+    adaptive: False

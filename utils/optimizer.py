@@ -1,6 +1,7 @@
 # implement all optimizers her
 import math
 import numpy as np
+from typing import Iterable
 import torch
 from torch.optim import Adam, SGD
 from torch.optim.optimizer import Optimizer, required
@@ -187,7 +188,7 @@ class GSAM(Optimizer):
     Implements GSAM algorithm
         https://github.com/juntang-zhuang/GSAM/blob/main/gsam/gsam.py
     """
-    def __init__(self, params, model, gsam_alpha, rho_scheduler, base_optimizer=SGD, adaptive=False, perturb_eps=1e-12, grad_reduce='mean', **kwargs):
+    def __init__(self, params, model=None, gsam_alpha=0.01, rho_scheduler=None, base_optimizer=SGD, adaptive=False, perturb_eps=1e-12, grad_reduce='mean', **kwargs):
         defaults = dict(adaptive=adaptive, **kwargs)
         super(GSAM, self).__init__(params, defaults)
         self.model = model
@@ -450,17 +451,20 @@ class SchedulerBase:
     def lr(self):
         return self._last_lr[0]
 
+
 class LinearScheduler(SchedulerBase):
     def step_func(self):
         value = self.max_value + (self.min_value - self.max_value) * (self.t - self.warmup_steps) / (
                     self.total_steps - self.warmup_steps)
         return value
 
+
 class CosineScheduler(SchedulerBase):
     def step_func(self):
         phase = (self.t-self.warmup_steps) / (self.total_steps-self.warmup_steps) * math.pi
         value = self.min_value + (self.max_value-self.min_value) * (np.cos(phase) + 1.) / 2.0
         return value
+
 
 class PolyScheduler(SchedulerBase):
     def __init__(self, poly_order=-0.5, *args, **kwargs):
@@ -471,3 +475,26 @@ class PolyScheduler(SchedulerBase):
     def step_func(self):
         value = self.min_value + (self.max_value-self.min_value) * (self.t - self.warmup_steps)**self.poly_order
         return value
+
+
+class StepLR:
+    def __init__(self, optimizer, learning_rate: float, total_epochs: int):
+        self.optimizer = optimizer
+        self.total_epochs = total_epochs
+        self.base = learning_rate
+
+    def __call__(self, epoch):
+        if epoch < self.total_epochs * 3/10:
+            lr = self.base
+        elif epoch < self.total_epochs * 6/10:
+            lr = self.base * 0.2
+        elif epoch < self.total_epochs * 8/10:
+            lr = self.base * 0.2 ** 2
+        else:
+            lr = self.base * 0.2 ** 3
+
+        for param_group in self.optimizer.param_groups:
+            param_group["lr"] = lr
+
+    def lr(self) -> float:
+        return self.optimizer.param_groups[0]["lr"]

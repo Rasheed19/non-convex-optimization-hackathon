@@ -15,8 +15,8 @@ def training_pipeline(
     train_data, test_data = data_loader()
 
     # # # FIXME: just to test the pipeline; remove later
-    # train_data = sample_dataloader(train_data, 100)
-    # test_data = sample_dataloader(test_data, 50)
+    train_data = sample_dataloader(train_data, 100)
+    test_data = sample_dataloader(test_data, 50)
 
     model, history = model_trainer(
         train_data=train_data,

@@ -5,7 +5,7 @@ import numpy as np
 from utils.constants import PLOT_DIR
 from utils.helper import get_rcparams
 
-plt.rcParams.update(get_rcparams())
+# plt.rcParams.update(get_rcparams())
 
 
 def set_size(
