@@ -188,8 +188,8 @@ def model_trainer(
 
         exp.log_metric("train_loss", train_loss, epoch=epoch+1)
         exp.log_metric("test_loss", test_loss, epoch=epoch+1)
-        exp.log_metric("train_accuracy", train_accuracy, epoch=epoch+1)
-        exp.log_metric("test_accuracy", test_accuracy, epoch=epoch+1)
+        exp.log_metric("train_accuracy", train_acc, epoch=epoch+1)
+        exp.log_metric("test_accuracy", test_acc, epoch=epoch+1)
 
     torch.save(
         obj=model.state_dict(),
