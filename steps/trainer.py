@@ -28,7 +28,7 @@ with exp.train():
     exp_params = {
         "neural_network": {
             "type": "squeezenet1_0(weights=None)",
-            "batch_size": 3000,
+            "batch_size": 1200,
             "num_gpus": 3,
             "num_trainable_params": "1,248,424",
         },
