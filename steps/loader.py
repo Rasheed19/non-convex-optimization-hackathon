@@ -38,8 +38,10 @@ def data_loader() -> tuple[DataLoader, DataLoader]:
     )
 
     # Define the DataLoader for training and test sets
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
-    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=4)
+    train_loader = DataLoader(
+        train_dataset, batch_size=500, shuffle=True, num_workers=4
+    )
+    test_loader = DataLoader(test_dataset, batch_size=500, shuffle=False, num_workers=4)
 
     return train_loader, test_loader
 

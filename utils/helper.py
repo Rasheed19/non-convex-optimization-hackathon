@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from sklearn.utils import shuffle
 import logging
 import yaml
 
@@ -54,9 +53,6 @@ def get_image_meta_data(path_to_split: str) -> pd.DataFrame:
     )
     # Adding the full path to the data frame
     image_index_label["path"] = full_path
-
-    # Randomly shuffling the order to the data in the dataframe
-    image_index_label = shuffle(image_index_label)
 
     return image_index_label
 
