@@ -11,6 +11,7 @@ from utils.constants import NUM_CLASSES
 from utils.optimizer import get_optimizer
 
 import comet_ml
+import os
 from dotenv import load_dotenv
 
 
