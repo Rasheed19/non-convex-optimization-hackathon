@@ -19,7 +19,7 @@ API_KEY = os.getenv("API_KEY")
 WORKSPACE = os.getenv("WORKSPACE")
 
 exp = comet_ml.Experiment(project_name="hackathon", api_key=API_KEY, workspace=WORKSPACE)
-exp_name = "exp_02"
+exp_name = "exp_03"
 exp.set_name(exp_name)
 
 
@@ -151,7 +151,7 @@ def model_trainer(
             },
             "optimizer": {
                 "type": "SGD",
-                "learning_rate": 0.001,
+                "learning_rate": 0.01,
             },
             "loss_function": {
                 "type": "nn.CrossEntropyLoss()",
