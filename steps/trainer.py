@@ -301,7 +301,8 @@ def model_trainer(
             },
         }
         exp.log_parameters(parameters=exp_params)
-        if isinstance(optimizer, SAM):
+    
+    if isinstance(optimizer, SAM):
         scheduler = StepLR(optimizer=optimizer, learning_rate=optimizer_params['lr'], total_epochs=epochs)
     elif isinstance(optimizer, GSAM):
         pass
