@@ -1,3 +1,5 @@
+import comet_ml
+
 from torch import nn, save, load, hub
 from torch.optim import Adam, Optimizer
 from torch.utils.data import DataLoader
@@ -10,7 +12,6 @@ from torchvision import models
 from utils.constants import NUM_CLASSES
 from utils.optimizer import get_optimizer
 
-import comet_ml
 import os
 from dotenv import load_dotenv
 
@@ -23,19 +24,23 @@ exp = comet_ml.Experiment(project_name="hackathon", api_key=API_KEY, workspace=W
 exp_name = "exp_01"
 exp.set_name(exp_name)
 
-exp_params = {
-    "neural_network": {
-        "type": "squeezenet1_0(weights=None)",
-    },
-    "optimizer": {
-        "type": "Adam",
-        "learning_rate": 0.001,
-    },
-    "loss_function": {
-        "type": "nn.CrossEntropyLoss()",
-    },
-}
-exp.log_parameters(parameters=exp_params)
+with exp.train():
+    exp_params = {
+        "neural_network": {
+            "type": "squeezenet1_0(weights=None)",
+            "batch_size": 3000,
+            "num_gpus": 3,
+            "num_trainable_params": "1,248,424",
+        },
+        "optimizer": {
+            "type": "Adam",
+            "learning_rate": 0.001,
+        },
+        "loss_function": {
+            "type": "nn.CrossEntropyLoss()",
+        },
+    }
+    exp.log_parameters(parameters=exp_params)
 
 
 class DeepNN(nn.Module):
@@ -121,9 +126,10 @@ def model_trainer(
             loss.backward()
             optimizer.step()
 
+            exp.log_metric("loss_in_epoch", loss.item(), step=i+1, epoch=epoch+1)
             print(f"At epoch: {epoch + 1} and batch: {i + 1}")
 
-        exp.log_metric("loss", step=epoch+1, epoch=epoch+1)
+        exp.log_metric("loss_end_epoch", loss.item(), epoch=epoch+1)
         print(f"Epoch: {epoch + 1}, loss: {loss.item()}")
 
     #     # Calculate and accumulate accuracy metric across all batches
@@ -137,3 +143,5 @@ def model_trainer(
 
     # with open(f"{Definition.ROOT_DIR}/models/model_state.pt", "wb") as f:
     #     save(clf.state_dict(), f)
+
+    exp.end()
