@@ -10,6 +10,32 @@ from torchvision import models
 from utils.constants import NUM_CLASSES
 from utils.optimizer import get_optimizer
 
+import comet_ml
+from dotenv import load_dotenv
+
+
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+WORKSPACE = os.getenv("WORKSPACE")
+
+exp = comet_ml.Experiment(project_name="hackathon")
+exp_name = "exp_01"
+exp.set_name(exp_name)
+
+exp_params = {
+    "neural_network": {
+        "type": "squeezenet1_0(weights=None)",
+    },
+    "optimizer": {
+        "type": "Adam",
+        "learning_rate": 0.001,
+    },
+    "loss_function": {
+        "type": "nn.CrossEntropyLoss()",
+    },
+}
+exp.log_parameters(parameters=exp_params)
+
 
 class DeepNN(nn.Module):
 
@@ -96,6 +122,7 @@ def model_trainer(
 
             print(f"At epoch: {epoch + 1} and batch: {i + 1}")
 
+        exp.log_metric("loss", step=epoch+1, epoch=epoch+1)
         print(f"Epoch: {epoch + 1}, loss: {loss.item()}")
 
     #     # Calculate and accumulate accuracy metric across all batches
