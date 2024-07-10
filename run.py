@@ -37,7 +37,7 @@ from utils.helper import load_yaml_file
 @click.option(
     "--batch-size",
     default=32,
-    type=click.IntRange(min=1, max=200),
+    type=click.IntRange(min=1, max=10000),
     help="""Specify the batch size for model training.
     Default to 32.
         """,
@@ -45,7 +45,7 @@ from utils.helper import load_yaml_file
 @click.option(
     "--epochs",
     default=2,
-    type=click.IntRange(min=1, max=200),
+    type=click.IntRange(min=1, max=500),
     help="""Specify how many epochs to train model.
     Default to 1.
         """,

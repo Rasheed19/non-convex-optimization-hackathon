@@ -1,3 +1,5 @@
+import comet_ml
+
 import torch
 from torch import nn
 from torch.optim import Optimizer
@@ -7,6 +9,18 @@ from torchvision import models
 
 from utils.constants import NUM_CLASSES, IMAGE_DIMENSION, MODEL_DIR
 from utils.optimizer import get_optimizer
+
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+WORKSPACE = os.getenv("WORKSPACE")
+
+exp = comet_ml.Experiment(project_name="hackathon", api_key=API_KEY, workspace=WORKSPACE)
+exp_name = "exp_01"
+exp.set_name(exp_name)
 
 
 def create_model() -> nn.Module:
@@ -103,7 +117,12 @@ def model_trainer(
     loss_function: nn.Module = nn.CrossEntropyLoss(),
 ) -> tuple[nn.Module, dict]:
 
-    model = create_model()
+    model = create_model().to(device)
+
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!\n\n")
+        model = nn.DataParallel(model)
+
     optimizer_params["params"] = model.parameters()
     optimizer = get_optimizer(
         optimizer_name=optimizer_name, optimizer_params=optimizer_params
@@ -115,6 +134,24 @@ def model_trainer(
         "test_loss": [],
         "test_accuracy": [],
     }
+
+    with exp.train():
+        exp_params = {
+            "neural_network": {
+                "type": "mobilenet_v2(weights=None)",
+                "batch_size": batch_size,
+                "num_gpus": 3,
+                "num_trainable_params": "3,600,000",
+            },
+            "optimizer": {
+                "type": "Adam",
+                "learning_rate": 0.001,
+            },
+            "loss_function": {
+                "type": "nn.CrossEntropyLoss()",
+            },
+        }
+        exp.log_parameters(parameters=exp_params)
 
     for epoch in range(epochs):
 

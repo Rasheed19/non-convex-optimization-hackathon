@@ -39,7 +39,11 @@ def data_loader(batch_size: int) -> tuple[DataLoader, DataLoader]:
 
     # Define the DataLoader for training and test sets
     train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, num_workers=4
+        train_dataset, batch_size=batch_size, shuffle=True,
+        pin_memory=True,
+        num_workers=15,
+        prefetch_factor=2,
+        persistent_workers=True,
     )
     test_loader = DataLoader(
         test_dataset, batch_size=batch_size, shuffle=False, num_workers=4
