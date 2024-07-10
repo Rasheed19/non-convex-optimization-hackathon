@@ -150,7 +150,7 @@ def model_trainer(
                 "num_trainable_params": "3,600,000",
             },
             "optimizer": {
-                "type": "Adam",
+                "type": "SGD",
                 "learning_rate": 0.001,
             },
             "loss_function": {

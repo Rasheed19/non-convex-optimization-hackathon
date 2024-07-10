@@ -86,15 +86,6 @@ def plot_training_pipeline_history(
 
     for i, m in enumerate(["loss", "accuracy"]):
         ax = fig.add_subplot(1, 2, i + 1)
-        ax.text(
-            x=-0.1,
-            y=1.2,
-            s=r"\bf \large {}".format(fig_labels[i]),
-            transform=ax.transAxes,
-            fontweight="bold",
-            va="top",
-        )
-
         for d, c in zip(["train", "test"], ["black", "fuchsia"]):
             ax.plot(
                 epoch_array,
