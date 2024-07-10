@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import logging
 import yaml
+import torch
+from torch.utils.data import DataLoader, Subset, random_split
 
 
 def get_rcparams():
@@ -9,7 +11,7 @@ def get_rcparams():
     MEDIUM_SIZE = 10
     BIGGER_SIZE = 11
 
-    FONT = {"family": "serif", "serif": ["Times"], "size": MEDIUM_SIZE}
+    FONT = {"family": "serif", "serif": ["Palatino"], "size": MEDIUM_SIZE}
 
     rc_params = {
         "axes.titlesize": MEDIUM_SIZE,
@@ -29,6 +31,7 @@ def get_rcparams():
         "axes.spines.bottom": True,
         "xtick.bottom": True,
         "ytick.left": True,
+        "figure.constrained_layout.use": True,
     }
 
     return rc_params
@@ -99,3 +102,37 @@ def load_yaml_file(path: str) -> dict:
         data = yaml.safe_load(file)
 
     return data
+
+
+def sample_dataloader(
+    dataloader: DataLoader, sample_size: int, seed=None
+) -> DataLoader:
+    if seed is not None:
+        torch.manual_seed(seed)
+
+    # Get the dataset from the original DataLoader
+    dataset = dataloader.dataset
+
+    # Calculate the size of the dataset
+    dataset_size = len(dataset)
+
+    # Ensure the sample size is not larger than the dataset size
+    if sample_size > dataset_size:
+        raise ValueError("Sample size cannot be larger than the dataset size.")
+
+    # Generate indices for the subset
+    indices = torch.randperm(dataset_size).tolist()[:sample_size]
+
+    # Create a Subset using the generated indices
+    subset = Subset(dataset, indices)
+
+    # Create a new DataLoader for the subset
+    subset_dataloader = DataLoader(
+        subset,
+        batch_size=dataloader.batch_size,
+        shuffle=False,
+        num_workers=dataloader.num_workers,
+        collate_fn=dataloader.collate_fn,
+    )
+
+    return subset_dataloader
