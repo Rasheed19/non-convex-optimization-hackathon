@@ -67,7 +67,7 @@ def single_epoch_training(
         y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
         train_acc += (y_pred_class == labels).sum().item() / len(y_pred)
 
-        exp.log_metric("train_loss", train_loss, step=i+1, epoch=epoch+1)
+        exp.log_metric("train_loss_in_epoch", train_loss, step=i+1, epoch=epoch+1)
 
     train_loss = train_loss / len(train_data)
     train_acc = train_acc / len(train_data)
@@ -104,7 +104,7 @@ def single_epoch_testing(
                 test_pred_labels
             )
 
-            exp.log_metric("test_loss", test_loss, step=i+1, epoch=epoch+1)
+            exp.log_metric("test_loss_in_epoch", test_loss, step=i+1, epoch=epoch+1)
 
     test_loss = test_loss / len(test_data)
     test_acc = test_acc / len(test_data)
@@ -186,10 +186,10 @@ def model_trainer(
         history["test_loss"].append(test_loss)
         history["test_accuracy"].append(test_acc)
 
-        exp.log_metric("train_loss", train_loss, epoch=epoch+1)
-        exp.log_metric("test_loss", test_loss, epoch=epoch+1)
-        exp.log_metric("train_accuracy", train_acc, epoch=epoch+1)
-        exp.log_metric("test_accuracy", test_acc, epoch=epoch+1)
+        exp.log_metric("train_loss_end_epoch", train_loss, epoch=epoch+1)
+        exp.log_metric("test_loss_end_epoch", test_loss, epoch=epoch+1)
+        exp.log_metric("train_accuracy_end_epoch", train_acc, epoch=epoch+1)
+        exp.log_metric("test_accuracy_end_epoch", test_acc, epoch=epoch+1)
 
     torch.save(
         obj=model.state_dict(),
