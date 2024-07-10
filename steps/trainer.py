@@ -1,3 +1,5 @@
+import comet_ml
+
 import torch
 from torch import nn
 from torch.optim import Optimizer
@@ -8,6 +10,18 @@ from torch.optim import SGD
 
 from utils.constants import NUM_CLASSES, IMAGE_DIMENSION, MODEL_DIR
 from utils.optimizer import get_optimizer, enable_running_stats, disable_running_stats, StepLR, SAM, GSAM, CosineScheduler, ProportionScheduler
+
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+WORKSPACE = os.getenv("WORKSPACE")
+
+exp = comet_ml.Experiment(project_name="hackathon", api_key=API_KEY, workspace=WORKSPACE)
+exp_name = "exp_01"
+exp.set_name(exp_name)
 
 
 def create_model() -> nn.Module:
@@ -49,6 +63,8 @@ def training_base(
 
         y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
         train_acc += (y_pred_class == labels).sum().item() / len(y_pred)
+
+        exp.log_metric("train_loss_in_epoch", train_loss, step=i+1, epoch=epoch+1)
 
 
 def training_SAM(
@@ -177,6 +193,7 @@ def single_epoch_testing(
     test_data: DataLoader,
     loss_function: nn.Module,
     device: str,
+    epoch: int
 ) -> tuple[float]:
 
     model.eval()
@@ -184,7 +201,7 @@ def single_epoch_testing(
     test_loss, test_acc = 0.0, 0.0
 
     with torch.inference_mode():
-        for X, y in test_data:
+        for i, (X, y) in enumerate(test_data):
             images, labels = X.to(device), y.to(device)
 
             test_pred_logits = model(images)
@@ -200,6 +217,8 @@ def single_epoch_testing(
                 test_pred_labels
             )
 
+            exp.log_metric("test_loss_in_epoch", test_loss, step=i+1, epoch=epoch+1)
+
     test_loss = test_loss / len(test_data)
     test_acc = test_acc / len(test_data)
 
@@ -209,6 +228,7 @@ def single_epoch_testing(
 def model_trainer(
     train_data: DataLoader,
     test_data: DataLoader,
+    batch_size: int,
     optimizer_name: str,
     optimizer_params: dict,
     epochs: int,
@@ -216,7 +236,12 @@ def model_trainer(
     loss_function: nn.Module = nn.CrossEntropyLoss(),
 ) -> tuple[nn.Module, dict]:
 
-    model = create_model()
+    model = create_model().to(device)
+
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!\n\n")
+        model = nn.DataParallel(model)
+
     optimizer_params["params"] = model.parameters()
 
     if optimizer_name == 'gsam':
@@ -238,13 +263,50 @@ def model_trainer(
         "test_loss": [],
         "test_accuracy": [],
     }
-    if isinstance(optimizer, SAM):
+
+    
+
+    with exp.train():
+        exp_params = {
+            "neural_network": {
+                "type": "mobilenet_v2(weights=None)",
+                "batch_size": batch_size,
+                "num_gpus": 3,
+                "num_trainable_params": "3,600,000",
+            },
+            "optimizer": {
+                "type": "Adam",
+                "learning_rate": 0.001,
+            },
+            "loss_function": {
+                "type": "nn.CrossEntropyLoss()",
+            },
+        }
+        exp.log_parameters(parameters=exp_params)
+
+    with exp.train():
+        exp_params = {
+            "neural_network": {
+                "type": "mobilenet_v2(weights=None)",
+                "batch_size": batch_size,
+                "num_gpus": 3,
+                "num_trainable_params": "3,600,000",
+            },
+            "optimizer": {
+                "type": "Adam",
+                "learning_rate": 0.001,
+            },
+            "loss_function": {
+                "type": "nn.CrossEntropyLoss()",
+            },
+        }
+        exp.log_parameters(parameters=exp_params)
+        if isinstance(optimizer, SAM):
         scheduler = StepLR(optimizer=optimizer, learning_rate=optimizer_params['lr'], total_epochs=epochs)
     elif isinstance(optimizer, GSAM):
         pass
     else:
-        scheduler = None
-    
+        scheduler = None    
 
     for epoch in range(epochs):
         train_loss, train_acc = single_epoch_training(
@@ -258,7 +320,7 @@ def model_trainer(
         )
 
         test_loss, test_acc = single_epoch_testing(
-            model=model, test_data=test_data, loss_function=loss_function, device=device
+            model=model, test_data=test_data, loss_function=loss_function, device=device, epoch=epoch
         )
 
         print(
@@ -274,8 +336,13 @@ def model_trainer(
         history["test_loss"].append(test_loss)
         history["test_accuracy"].append(test_acc)
 
+        exp.log_metric("train_loss_end_epoch", train_loss, epoch=epoch+1)
+        exp.log_metric("test_loss_end_epoch", test_loss, epoch=epoch+1)
+        exp.log_metric("train_accuracy_end_epoch", train_acc, epoch=epoch+1)
+        exp.log_metric("test_accuracy_end_epoch", test_acc, epoch=epoch+1)
+
     torch.save(
         obj=model.state_dict(),
-        f=f"{MODEL_DIR}/model_optimizer={optimizer_name}_epochs={epochs}.pt",
+        f=f"{MODEL_DIR}/model_batch_size={batch_size}_optimizer={optimizer_name}_epochs={epochs}.pt",
     )
     return model, history

@@ -77,7 +77,7 @@ def plot_food_samples(image_meta_data: pd.DataFrame) -> None:
 
 
 def plot_training_pipeline_history(
-    history: dict, epochs: int, optimizer_name: str
+    history: dict, epochs: int, optimizer_name: str, batch_size: int
 ) -> None:
 
     fig = plt.figure(figsize=set_size(subplots=(1, 2)))
@@ -86,14 +86,14 @@ def plot_training_pipeline_history(
 
     for i, m in enumerate(["loss", "accuracy"]):
         ax = fig.add_subplot(1, 2, i + 1)
-        # ax.text(
-        #     x=-0.1,
-        #     y=1.2,
-        #     s=r"\bf \large {}".format(fig_labels[i]),
-        #     transform=ax.transAxes,
-        #     fontweight="bold",
-        #     va="top",
-        # )
+        ax.text(
+            x=-0.1,
+            y=1.2,
+            s=r"\bf \large {}".format(fig_labels[i]),
+            transform=ax.transAxes,
+            fontweight="bold",
+            va="top",
+        )
 
         for d, c in zip(["train", "test"], ["black", "fuchsia"]):
             ax.plot(
@@ -109,7 +109,7 @@ def plot_training_pipeline_history(
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=2)
     plt.savefig(
-        fname=f"{PLOT_DIR}/training_history_plot_optimizer={optimizer_name}_epochs={epochs}.pdf",
+        fname=f"{PLOT_DIR}/training_history_plot_batch_size={batch_size}_optimizer={optimizer_name}_epochs={epochs}.pdf",
         bbox_inches="tight",
     )
 
