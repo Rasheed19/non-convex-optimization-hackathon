@@ -23,7 +23,7 @@ def get_rcparams():
         "font.family": FONT["family"],
         "font.serif": FONT["serif"],
         "font.size": FONT["size"],
-        "text.usetex": True,
+        "text.usetex": False,
         "axes.grid": False,
         "axes.spines.top": False,
         "axes.spines.right": False,
