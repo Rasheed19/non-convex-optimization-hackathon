@@ -46,8 +46,9 @@ def training_base(
     device: str,
     train_loss: float, 
     train_acc: float, 
+    epoch: int, 
 ) -> tuple[float]:
-    for X, y in train_data:
+    for i, (X, y) in enumerate(train_data):
         images, labels = X.to(device), y.to(device)
 
         y_pred = model(images)
@@ -79,7 +80,7 @@ def training_SAM(
     scheduler: StepLR,   
 ) -> tuple[float]:
     
-    for X, y in train_data:
+    for i, (X, y) in enumerate(train_data): 
         images, labels = X.to(device), y.to(device)
         # first forward-backward step
         enable_running_stats(model=model)
@@ -102,7 +103,7 @@ def training_SAM(
             y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
             train_acc += (y_pred_class == labels).sum().item() / len(y_pred)
             scheduler(epoch=epoch)
-
+        exp.log_metric("train_loss_in_epoch", train_loss, step=i+1, epoch=epoch+1)
 
 def training_GSAM(
     model: nn.Module,
@@ -115,7 +116,7 @@ def training_GSAM(
     epoch: int,
     scheduler: list,  
 ) -> tuple[float]:
-    for X, y in train_data:
+    for i, (X, y) in enumerate(train_data):
         images, labels = X.to(device), y.to(device)
         
         optimizer.set_closure(loss_function, images, labels)
@@ -128,7 +129,7 @@ def training_GSAM(
             train_acc += (y_pred_class == labels).sum().item() / len(y_pred)
             scheduler[0].step()
             optimizer.update_rho_t()
-
+        exp.log_metric("train_loss_in_epoch", train_loss, step=i+1, epoch=epoch+1)
 
 def single_epoch_training(
     model: nn.Module,
@@ -179,6 +180,7 @@ def single_epoch_training(
             device = device,
             train_loss = train_loss, 
             train_acc = train_acc,
+            epoch = epoch, 
         )
 
 
