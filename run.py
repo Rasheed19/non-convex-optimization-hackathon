@@ -35,6 +35,14 @@ from utils.helper import load_yaml_file
         """,
 )
 @click.option(
+    "--batch-size",
+    default=32,
+    type=click.IntRange(min=1, max=200),
+    help="""Specify the batch size for model training.
+    Default to 32.
+        """,
+)
+@click.option(
     "--epochs",
     default=2,
     type=click.IntRange(min=1, max=200),
@@ -46,6 +54,7 @@ def main(
     only_eda: bool = False,
     device: str = "cpu",
     optimizer_name: str = "adam",
+    batch_size: int = 32,
     epochs: int = 1.0,
 ) -> None:
 
@@ -57,6 +66,7 @@ def main(
         return None
 
     training_pipeline(
+        batch_size=batch_size,
         optimizer_name=optimizer_name,
         optimizer_params=MODEL_CONFIG["optimizers"][optimizer_name],
         epochs=epochs,

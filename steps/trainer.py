@@ -95,6 +95,7 @@ def single_epoch_testing(
 def model_trainer(
     train_data: DataLoader,
     test_data: DataLoader,
+    batch_size: int,
     optimizer_name: str,
     optimizer_params: dict,
     epochs: int,
@@ -143,6 +144,6 @@ def model_trainer(
 
     torch.save(
         obj=model.state_dict(),
-        f=f"{MODEL_DIR}/model_optimizer={optimizer_name}_epochs={epochs}.pt",
+        f=f"{MODEL_DIR}/model_batch_size={batch_size}_optimizer={optimizer_name}_epochs={epochs}.pt",
     )
     return model, history
