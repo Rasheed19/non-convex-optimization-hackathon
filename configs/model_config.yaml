@@ -1,4 +1,3 @@
-epochs: 200
 optimizers:
   adam:
     lr: 0.001

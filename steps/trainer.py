@@ -1,111 +1,148 @@
-from torch import nn, save, load, hub
-from torch.optim import Adam, Optimizer
+import torch
+from torch import nn
+from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-from torchvision import datasets
-from torchvision.transforms import ToTensor
 from torchsummary import summary
-from typing import Any
 from torchvision import models
 
-from utils.constants import NUM_CLASSES
+from utils.constants import NUM_CLASSES, IMAGE_DIMENSION, MODEL_DIR
 from utils.optimizer import get_optimizer
 
 
-class DeepNN(nn.Module):
+def create_model() -> nn.Module:
+    model = models.mobilenet_v2(weights=None)
+    classifier = nn.Sequential(
+        nn.Linear(in_features=model.last_channel, out_features=1024),
+        nn.LeakyReLU(),
+        nn.Linear(in_features=1024, out_features=NUM_CLASSES),
+    )
+    model.classifier = classifier
 
-    def __init__(self) -> None:
-        super().__init__()
-        # self.model = nn.Sequential(
-        #     nn.Conv2d(
-        #         in_channels=3,
-        #         out_channels=8,
-        #         kernel_size=3,
-        #         padding=1,
-        #     ),
-        #     nn.Conv2d(
-        #         in_channels=8,
-        #         out_channels=16,
-        #         kernel_size=3,
-        #     ),
-        #     nn.Conv2d(
-        #         in_channels=16,
-        #         out_channels=32,
-        #         kernel_size=3,
-        #     ),
-        #     nn.Conv2d(
-        #         in_channels=32,
-        #         out_channels=64,
-        #         kernel_size=3,
-        #     ),
-        #     nn.Conv2d(
-        #         in_channels=64,
-        #         out_channels=128,
-        #         kernel_size=3,
-        #     ),
-        #     nn.MaxPool2d(kernel_size=2, stride=2, padding=0),
-        #     nn.Linear(128 * 7 * 7, 512),
-        #     nn.Linear(512, NUM_CLASSES),
-        # )
-        self.model = nn.Sequential(
-            nn.Linear(3 * 224 * 224, 1024),
-            nn.Linear(1024, NUM_CLASSES),
-        )
+    print(summary(model, IMAGE_DIMENSION))
 
-    def forward(self, x):
-        return self.model(x)
+    return model
+
+
+def single_epoch_training(
+    model: nn.Module,
+    train_data: DataLoader,
+    loss_function: nn.Module,
+    optimizer: Optimizer,
+    device: str,
+) -> tuple[float]:
+
+    model.train()
+
+    train_loss, train_acc = 0.0, 0.0
+
+    for X, y in train_data:
+        images, labels = X.to(device), y.to(device)
+
+        y_pred = model(images)
+
+        loss = loss_function(y_pred, labels)
+        train_loss += loss.item()
+
+        optimizer.zero_grad()
+
+        loss.backward()
+
+        optimizer.step()
+
+        y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
+        train_acc += (y_pred_class == labels).sum().item() / len(y_pred)
+
+    train_loss = train_loss / len(train_data)
+    train_acc = train_acc / len(train_data)
+
+    return train_loss, train_acc
+
+
+def single_epoch_testing(
+    model: nn.Module,
+    test_data: DataLoader,
+    loss_function: nn.Module,
+    device: str,
+) -> tuple[float]:
+
+    model.eval()
+
+    test_loss, test_acc = 0.0, 0.0
+
+    with torch.inference_mode():
+        for X, y in test_data:
+            images, labels = X.to(device), y.to(device)
+
+            test_pred_logits = model(images)
+
+            loss = loss_function(test_pred_logits, labels)
+            test_loss += loss.item()
+
+            test_pred_labels = torch.argmax(
+                torch.softmax(test_pred_logits, dim=1), dim=1
+            )
+
+            test_acc += (test_pred_labels == labels).sum().item() / len(
+                test_pred_labels
+            )
+
+    test_loss = test_loss / len(test_data)
+    test_acc = test_acc / len(test_data)
+
+    return test_loss, test_acc
 
 
 def model_trainer(
-    training_data: DataLoader,
+    train_data: DataLoader,
+    test_data: DataLoader,
     optimizer_name: str,
     optimizer_params: dict,
     epochs: int,
     device: str,
-    loss_function: Any = nn.CrossEntropyLoss(),
-) -> nn.Module:
+    loss_function: nn.Module = nn.CrossEntropyLoss(),
+) -> tuple[nn.Module, dict]:
 
-    # classifier = nn.Sequential(
-    #     nn.Linear(1000, 1024),
-    #     nn.LeakyReLU(),
-    #     nn.Linear(1024, NUM_CLASSES),
-    # )
-    model = models.squeezenet1_0(weights=None)  # DeepNN().to(device=device)
-    # model.classifier = classifier
-
-    print(summary(model, (3, 224, 224)))
-
-    # print(model)
-    # print(len(model))
-    # optimization set up
+    model = create_model()
     optimizer_params["params"] = model.parameters()
     optimizer = get_optimizer(
         optimizer_name=optimizer_name, optimizer_params=optimizer_params
     )
 
-    for epoch in range(epochs):  # train for 10 epochs
-        for i, batch in enumerate(training_data):
-            X, y = batch
-            X, y = X.to(device), y.to(device)
-            yhat = model(X)
-            loss = loss_function(yhat, y)
+    history = {
+        "train_loss": [],
+        "train_accuracy": [],
+        "test_loss": [],
+        "test_accuracy": [],
+    }
 
-            # apply back propagation
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+    for epoch in range(epochs):
 
-            print(f"At epoch: {epoch + 1} and batch: {i + 1}")
+        train_loss, train_acc = single_epoch_training(
+            model=model,
+            train_data=train_data,
+            loss_function=loss_function,
+            optimizer=optimizer,
+            device=device,
+        )
+        test_loss, test_acc = single_epoch_testing(
+            model=model, test_data=test_data, loss_function=loss_function, device=device
+        )
 
-        print(f"Epoch: {epoch + 1}, loss: {loss.item()}")
+        print(
+            f"Epoch {epoch + 1}/{epochs} | "
+            f"train_loss: {train_loss:.4f} | "
+            f"test_loss: {test_loss:.4f} | "
+            f"train_accuracy: {train_acc:.4f} | "
+            f"test_accuracy: {test_acc:.4f}"
+        )
 
-    #     # Calculate and accumulate accuracy metric across all batches
-    #     y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
-    #     train_acc += (y_pred_class == labels).sum().item()/len(y_pred)
+        history["train_loss"].append(train_loss)
+        history["train_accuracy"].append(train_acc)
+        history["test_loss"].append(test_loss)
+        history["test_accuracy"].append(test_acc)
 
-    # # Adjust metrics to get average loss and accuracy per batch
-    # train_loss = train_loss / len(dataloader)
-    # train_acc = train_acc / len(dataloader)
-    # return train_loss, train_acc
-
-    # with open(f"{Definition.ROOT_DIR}/models/model_state.pt", "wb") as f:
-    #     save(clf.state_dict(), f)
+    torch.save(
+        obj=model.state_dict(),
+        f=f"{MODEL_DIR}/model_optimizer={optimizer_name}_epochs={epochs}.pt",
+    )
+    return model, history

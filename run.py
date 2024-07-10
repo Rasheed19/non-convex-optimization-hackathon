@@ -34,8 +34,19 @@ from utils.helper import load_yaml_file
     Default to 'adam'.
         """,
 )
+@click.option(
+    "--epochs",
+    default=2,
+    type=click.IntRange(min=1, max=200),
+    help="""Specify how many epochs to train model.
+    Default to 1.
+        """,
+)
 def main(
-    only_eda: bool = False, device: str = "cpu", optimizer_name: str = "adam"
+    only_eda: bool = False,
+    device: str = "cpu",
+    optimizer_name: str = "adam",
+    epochs: int = 1.0,
 ) -> None:
 
     MODEL_CONFIG = load_yaml_file(path=f"{ROOT_DIR}/configs/model_config.yaml")
@@ -48,7 +59,7 @@ def main(
     training_pipeline(
         optimizer_name=optimizer_name,
         optimizer_params=MODEL_CONFIG["optimizers"][optimizer_name],
-        epochs=MODEL_CONFIG["epochs"],
+        epochs=epochs,
         device=device,
     )
 
