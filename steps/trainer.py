@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from torch.optim import Optimizer, SGD
+from torch.optim import Optimizer, SGD, Adam
 from torch.utils.data import DataLoader
 from torchsummary import summary
 from torchvision import models
@@ -178,11 +178,16 @@ def model_trainer(
             scheduler = None
 
     elif optimizer_name == "gsam":
-        base_optimizer = SGD(
+        # base_optimizer = SGD(
+        #     model.parameters(),
+        #     lr=optimizer_params["lr"],
+        #     momentum=optimizer_params["momentum"],
+        #     weight_decay=optimizer_params["weight_decay"],
+        # )
+
+        base_optimizer = Adam(
             model.parameters(),
             lr=optimizer_params["lr"],
-            momentum=optimizer_params["momentum"],
-            weight_decay=optimizer_params["weight_decay"],
         )
 
         scheduler_ = CosineScheduler(

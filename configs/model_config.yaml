@@ -9,7 +9,7 @@ optimizers:
     lr: 0.01
     rho: 0.05
   gsam:
-    lr: 0.01
+    lr: 0.001
     rho_max: 0.6
     rho_min: 0.4
     alpha: 0.1
