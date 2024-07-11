@@ -163,7 +163,7 @@ def model_trainer(
         print("Let's use", torch.cuda.device_count(), "GPUs!\n\n")
         model = nn.DataParallel(model)
 
-    if optimizer_name in ["adam", "sgd", "sgld", "sam"]:
+    if optimizer_name in ["adam", "sgd", "sgld", "sam", "adagrad"]:
         optimizer_params["params"] = model.parameters()
         optimizer = get_optimizer(
             optimizer_name=optimizer_name, optimizer_params=optimizer_params
