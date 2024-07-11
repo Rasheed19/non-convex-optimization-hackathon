@@ -88,10 +88,3 @@ def main(
 
 if __name__ == "__main__":
     main()
-
-
-# TODO:
-# address all the # FIXME:
-# remove run and Optim branches; only legacy and main branch should be left
-# update README and clean up REPO
-# Poster? I have template!!!

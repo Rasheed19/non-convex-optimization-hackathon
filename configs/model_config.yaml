@@ -1,18 +1,27 @@
 optimizers:
   adam:
     lr: 0.001
+
   adamw:
     lr: 0.001
+
   sgd:
     lr: 0.001
+
   adagrad: 
     lr: 0.001
+
+  adamax:
+    lr: 0.001
+
   sgld:
     lr: 0.001
     momentum: 0.9
+
   sam:
     lr: 0.01
     rho: 0.05
+
   gsam:
     lr: 0.1
     rho_max: 2.0
@@ -21,3 +30,6 @@ optimizers:
     momentum: 0.9
     weight_decay: 0.0005
     adaptive: True
+  
+  theopoula: 
+    lr: 0.1

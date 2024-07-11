@@ -163,7 +163,7 @@ def model_trainer(
         print("Let's use", torch.cuda.device_count(), "GPUs!\n\n")
         model = nn.DataParallel(model)
 
-    if optimizer_name in ["adam", "sgd", "sgld", "sam", "adagrad", "adamw"]:
+    if optimizer_name != "gsam":
         optimizer_params["params"] = model.parameters()
         optimizer = get_optimizer(
             optimizer_name=optimizer_name, optimizer_params=optimizer_params
@@ -178,7 +178,7 @@ def model_trainer(
         else:
             scheduler = None
 
-    elif optimizer_name == "gsam":
+    else:
         # base_optimizer = SGD(
         #     model.parameters(),
         #     lr=optimizer_params["lr"],
