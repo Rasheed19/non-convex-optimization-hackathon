@@ -6,7 +6,7 @@ optimizers:
   sgld:
     lr: 0.001
   sam:
-    lr: 0.001
+    lr: 0.01
     rho: 0.05
   gsam:
     lr: 0.01
