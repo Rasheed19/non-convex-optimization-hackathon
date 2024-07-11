@@ -1,26 +1,41 @@
-import comet_ml
-
 import torch
 from torch import nn
-from torch.optim import Optimizer
+from torch.optim import Optimizer, SGD
 from torch.utils.data import DataLoader
 from torchsummary import summary
 from torchvision import models
-
-from utils.constants import NUM_CLASSES, IMAGE_DIMENSION, MODEL_DIR
-from utils.optimizer import get_optimizer
-
 import os
 from dotenv import load_dotenv
+from comet_ml import Experiment
+from typing import Any
+
+from utils.constants import NUM_CLASSES, IMAGE_DIMENSION, MODEL_DIR
+from utils.optimizer import (
+    get_optimizer,
+    StepLR,
+    SAM,
+    GSAM,
+    CosineScheduler,
+    ProportionScheduler,
+)
+from utils.extras import (
+    training_base,
+    sam_single_epoch_training,
+    gsam_single_epoch_training,
+)
 
 
 load_dotenv()
-API_KEY = os.getenv("API_KEY")
-WORKSPACE = os.getenv("WORKSPACE")
 
-exp = comet_ml.Experiment(project_name="hackathon", api_key=API_KEY, workspace=WORKSPACE)
-exp_name = "exp_04"
-exp.set_name(exp_name)
+
+def create_experiment(exp_name: str = "exp_02") -> Experiment:
+    API_KEY = os.getenv("API_KEY")
+    WORKSPACE = os.getenv("WORKSPACE")
+
+    exp = Experiment(project_name="hackathon", api_key=API_KEY, workspace=WORKSPACE)
+    exp.set_name(exp_name)
+
+    return exp
 
 
 def create_model() -> nn.Module:
@@ -43,34 +58,47 @@ def single_epoch_training(
     loss_function: nn.Module,
     optimizer: Optimizer,
     device: str,
-    epoch: int
+    epoch: int,
+    comet_experiment_tracker_handler: Experiment,
+    scheduler: Any | None = None,
 ) -> tuple[float]:
 
     model.train()
 
-    train_loss, train_acc = 0.0, 0.0
+    if isinstance(optimizer, SAM) and scheduler is not None:
+        train_loss, train_acc = sam_single_epoch_training(
+            model=model,
+            train_data=train_data,
+            loss_function=loss_function,
+            optimizer=optimizer,
+            device=device,
+            epoch=epoch,
+            scheduler=scheduler,
+            comet_experiment_tracker_handler=comet_experiment_tracker_handler,
+        )
 
-    for i, (X, y) in enumerate(train_data):
-        images, labels = X.to(device), y.to(device)
+    elif isinstance(optimizer, GSAM) and scheduler is not None:
+        train_loss, train_acc = gsam_single_epoch_training(
+            model=model,
+            train_data=train_data,
+            loss_function=loss_function,
+            optimizer=optimizer,
+            device=device,
+            epoch=epoch,
+            scheduler=scheduler,
+            comet_experiment_tracker_handler=comet_experiment_tracker_handler,
+        )
 
-        y_pred = model(images)
-
-        loss = loss_function(y_pred, labels)
-        train_loss += loss.item()
-
-        optimizer.zero_grad()
-
-        loss.backward()
-
-        optimizer.step()
-
-        y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
-        train_acc += (y_pred_class == labels).sum().item() / len(y_pred)
-
-        exp.log_metric("train_loss_in_epoch", train_loss, step=i+1, epoch=epoch+1)
-
-    train_loss = train_loss / len(train_data)
-    train_acc = train_acc / len(train_data)
+    else:
+        train_loss, train_acc = training_base(
+            model=model,
+            train_data=train_data,
+            loss_function=loss_function,
+            optimizer=optimizer,
+            device=device,
+            epoch=epoch,
+            comet_experiment_tracker_handler=comet_experiment_tracker_handler,
+        )
 
     return train_loss, train_acc
 
@@ -80,7 +108,8 @@ def single_epoch_testing(
     test_data: DataLoader,
     loss_function: nn.Module,
     device: str,
-    epoch: int
+    epoch: int,
+    comet_experiment_tracker_handler: Experiment,
 ) -> tuple[float]:
 
     model.eval()
@@ -104,7 +133,9 @@ def single_epoch_testing(
                 test_pred_labels
             )
 
-            exp.log_metric("test_loss_in_epoch", test_loss, step=i+1, epoch=epoch+1)
+            comet_experiment_tracker_handler.log_metric(
+                "test_loss_in_epoch", test_loss, step=i + 1, epoch=epoch + 1
+            )
 
     test_loss = test_loss / len(test_data)
     test_acc = test_acc / len(test_data)
@@ -120,19 +151,63 @@ def model_trainer(
     optimizer_params: dict,
     epochs: int,
     device: str,
+    exp_name: str,
     loss_function: nn.Module = nn.CrossEntropyLoss(),
 ) -> tuple[nn.Module, dict]:
 
     model = create_model().to(device)
+    comet_experiment_tracker_handler = create_experiment(exp_name=exp_name)
 
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!\n\n")
         model = nn.DataParallel(model)
 
-    optimizer_params["params"] = model.parameters()
-    optimizer = get_optimizer(
-        optimizer_name=optimizer_name, optimizer_params=optimizer_params
-    )
+    if optimizer_name in ["adam", "sgd", "sgld", "sam"]:
+        optimizer_params["params"] = model.parameters()
+        optimizer = get_optimizer(
+            optimizer_name=optimizer_name, optimizer_params=optimizer_params
+        )
+
+        if optimizer_name == "sam":
+            scheduler = StepLR(
+                optimizer=optimizer,
+                learning_rate=optimizer_params["lr"],
+                total_epochs=epochs,
+            )  # FIXME: I am not sure what this schedular does of SAM implementation
+        else:
+            scheduler = None
+
+    elif optimizer_name == "gsam":
+        base_optimizer = SGD(
+            model.parameters(),
+            lr=optimizer_params["lr"],
+            momentum=optimizer_params["momentum"],
+            weight_decay=optimizer_params["weight_decay"],
+        )
+
+        scheduler_ = CosineScheduler(
+            T_max=epochs * len(train_data),
+            max_value=optimizer_params["lr"],
+            min_value=0.0,
+            optimizer=base_optimizer,
+        )
+        rho_scheduler = ProportionScheduler(
+            pytorch_lr_scheduler=scheduler_,
+            max_lr=optimizer_params["lr"],
+            min_lr=0.0,
+            max_value=optimizer_params["rho_max"],
+            min_value=optimizer_params["rho_min"],
+        )
+        scheduler = (scheduler_, rho_scheduler)
+
+        optimizer = GSAM(
+            params=model.parameters(),
+            base_optimizer=base_optimizer,
+            model=model,
+            gsam_alpha=optimizer_params["alpha"],
+            rho_scheduler=scheduler[1],
+            adaptive=optimizer_params["adaptive"],
+        )
 
     history = {
         "train_loss": [],
@@ -141,23 +216,23 @@ def model_trainer(
         "test_accuracy": [],
     }
 
-    with exp.train():
+    with comet_experiment_tracker_handler.train():
         exp_params = {
             "neural_network": {
                 "type": "mobilenet_v2(weights=None)",
                 "batch_size": batch_size,
                 "num_gpus": 3,
-                "num_trainable_params": "3,600,000",
+                "num_trainable_params": "~3,600,000",
             },
             "optimizer": {
-                "type": "SGD",
-                "learning_rate": 0.1,
+                "type": optimizer_name,
+                "optimizer_params": optimizer_params,
             },
             "loss_function": {
                 "type": "nn.CrossEntropyLoss()",
             },
         }
-        exp.log_parameters(parameters=exp_params)
+        comet_experiment_tracker_handler.log_parameters(parameters=exp_params)
 
     for epoch in range(epochs):
 
@@ -167,10 +242,17 @@ def model_trainer(
             loss_function=loss_function,
             optimizer=optimizer,
             device=device,
-            epoch=epoch
+            epoch=epoch,
+            comet_experiment_tracker_handler=comet_experiment_tracker_handler,
+            scheduler=scheduler,
         )
         test_loss, test_acc = single_epoch_testing(
-            model=model, test_data=test_data, loss_function=loss_function, device=device, epoch=epoch
+            model=model,
+            test_data=test_data,
+            loss_function=loss_function,
+            device=device,
+            epoch=epoch,
+            comet_experiment_tracker_handler=comet_experiment_tracker_handler,
         )
 
         print(
@@ -186,10 +268,18 @@ def model_trainer(
         history["test_loss"].append(test_loss)
         history["test_accuracy"].append(test_acc)
 
-        exp.log_metric("train_loss_end_epoch", train_loss, epoch=epoch+1)
-        exp.log_metric("test_loss_end_epoch", test_loss, epoch=epoch+1)
-        exp.log_metric("train_accuracy_end_epoch", train_acc, epoch=epoch+1)
-        exp.log_metric("test_accuracy_end_epoch", test_acc, epoch=epoch+1)
+        comet_experiment_tracker_handler.log_metric(
+            "train_loss_end_epoch", train_loss, epoch=epoch + 1
+        )
+        comet_experiment_tracker_handler.log_metric(
+            "test_loss_end_epoch", test_loss, epoch=epoch + 1
+        )
+        comet_experiment_tracker_handler.log_metric(
+            "train_accuracy_end_epoch", train_acc, epoch=epoch + 1
+        )
+        comet_experiment_tracker_handler.log_metric(
+            "test_accuracy_end_epoch", test_acc, epoch=epoch + 1
+        )
 
     torch.save(
         obj=model.state_dict(),

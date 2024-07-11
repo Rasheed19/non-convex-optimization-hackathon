@@ -11,6 +11,7 @@ def training_pipeline(
     optimizer_params: dict,
     epochs: int,
     device: str,
+    exp_name: str,
 ) -> None:
 
     logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ def training_pipeline(
     # train_data = sample_dataloader(train_data, 100)
     # test_data = sample_dataloader(test_data, 50)
 
-    model, history = model_trainer(
+    _, history = model_trainer(
         train_data=train_data,
         test_data=test_data,
         batch_size=batch_size,
@@ -30,6 +31,7 @@ def training_pipeline(
         optimizer_params=optimizer_params,
         epochs=epochs,
         device=device,
+        exp_name=exp_name,
     )
     logger.info("Plotting training history...")
     plot_training_pipeline_history(

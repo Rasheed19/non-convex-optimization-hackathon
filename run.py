@@ -11,6 +11,14 @@ from utils.helper import load_yaml_file
     """
 )
 @click.option(
+    "--exp-name",
+    default="default-exp",
+    help="""Experiment name to be given to
+    comet-ml experiment tracker handler.
+    Default to 'default-exp'.
+        """,
+)
+@click.option(
     "--only-eda",
     is_flag=True,
     default=False,
@@ -51,6 +59,7 @@ from utils.helper import load_yaml_file
         """,
 )
 def main(
+    exp_name: str = "default-exp",
     only_eda: bool = False,
     device: str = "cpu",
     optimizer_name: str = "adam",
@@ -71,6 +80,7 @@ def main(
         optimizer_params=MODEL_CONFIG["optimizers"][optimizer_name],
         epochs=epochs,
         device=device,
+        exp_name=exp_name,
     )
 
     return None
@@ -78,3 +88,10 @@ def main(
 
 if __name__ == "__main__":
     main()
+
+
+# TODO:
+# address all the # FIXME:
+# remove run and Optim branches; only legacy and main branch should be left
+# update README and clean up REPO
+# Poster? I have template!!!
