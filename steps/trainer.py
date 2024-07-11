@@ -17,6 +17,7 @@ from utils.optimizer import (
     GSAM,
     CosineScheduler,
     ProportionScheduler,
+    LinearScheduler,
 )
 from utils.extras import (
     training_base,
@@ -190,18 +191,24 @@ def model_trainer(
             lr=optimizer_params["lr"],
         )
 
-        scheduler_ = CosineScheduler(
+        scheduler_ = LinearScheduler(
             T_max=epochs * len(train_data),
             max_value=optimizer_params["lr"],
-            min_value=0.0,
+            min_value=optimizer_params["lr"] * 0.01,
             optimizer=base_optimizer,
         )
-        rho_scheduler = ProportionScheduler(
-            pytorch_lr_scheduler=scheduler_,
-            max_lr=optimizer_params["lr"],
-            min_lr=0.0,
+        # rho_scheduler = ProportionScheduler(
+        #     pytorch_lr_scheduler=scheduler_,
+        #     max_lr=optimizer_params["lr"],
+        #     min_lr=0.0,
+        #     max_value=optimizer_params["rho_max"],
+        #     min_value=optimizer_params["rho_min"],
+        # )
+        rho_scheduler = LinearScheduler(
+            T_max=epochs * len(train_data),
             max_value=optimizer_params["rho_max"],
             min_value=optimizer_params["rho_min"],
+            optimizer=base_optimizer,
         )
         scheduler = (scheduler_, rho_scheduler)
 

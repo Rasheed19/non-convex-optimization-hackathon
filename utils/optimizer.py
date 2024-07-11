@@ -115,9 +115,8 @@ class SGLD(Optimizer):
                 p.data.add_(d_p, alpha=-group["lr"])
                 noise_std = torch.tensor([2 * group["lr"]])
                 noise_std = noise_std.sqrt()
-                noise = (
-                    p.data.new(p.data.size()).normal_(mean=0, std=1) * noise_std
-                )  #  FIXME: add noise to cuda
+                # noise = p.data.new(p.data.size()).normal_(mean=0, std=1) * noise_std
+                noise = torch.randn(p.data.size()) * noise_std
                 p.data.add_(noise)
 
         return 1.0
