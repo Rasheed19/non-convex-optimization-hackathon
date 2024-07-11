@@ -3,7 +3,7 @@ import math
 import numpy as np
 from typing import Iterable
 import torch
-from torch.optim import Adam, SGD, Adagrad
+from torch.optim import Adam, SGD, Adagrad, AdamW
 from torch.optim.optimizer import Optimizer, required
 import contextlib
 from torch.distributed import ReduceOp
@@ -14,7 +14,9 @@ from torch_sgld import SGLD
 def get_optimizer(optimizer_name: str, optimizer_params: dict) -> Optimizer:
 
     # FIXME: I think GSAM should be removed??
-    optimizer_dict = dict(adam=Adam, sgd=SGD, sgld=SGLD, sam=SAM, adagrad=Adagrad)
+    optimizer_dict = dict(
+        adam=Adam, adamw=AdamW, sgd=SGD, sgld=SGLD, sam=SAM, adagrad=Adagrad
+    )
 
     return optimizer_dict[optimizer_name](**optimizer_params)
 
