@@ -5,6 +5,7 @@ optimizers:
     lr: 0.001
   sgld:
     lr: 0.001
+    momentum: 0.9
   sam:
     lr: 0.01
     rho: 0.05
