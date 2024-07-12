@@ -85,8 +85,9 @@ def model_tester(saved_model_name: str) -> float:
     avg_te_correct = 0
     for sample in test_loader:
         te_correct = test(model, sample)
-        avg_te_correct += te_correct / len(test_dataset)
+        # avg_te_correct += te_correct / len(test_dataset)
+        avg_te_correct += te_correct
 
-        print(avg_te_correct)
+    avg_te_correct = avg_te_correct / len(test_dataset)
 
     return avg_te_correct * 100
