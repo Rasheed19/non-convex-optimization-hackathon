@@ -18,10 +18,10 @@ To experiment with different optimization algorithms and validate their performa
 ![model_pipeline](assets/ml_final_pipeline.png)
 
 # Set up
-All the experiments are run on the GPU. The following are the lists of options available to run with the entrypoint `run.py`:
+All the experiments are run on the GPU and [comet](https://www.comet.com/site/) is used for tracking experiments. The following are the lists of options available to run with the entrypoint `run.py`:
 
 ![run_args](assets/run_args.png)
 
 # Team
-The team that worked on this challenge comprise Rowan Turner, Galen Cao, Trung Pham, and Rasheed Ibraheem.
+The team that worked on this challenge comprises Rowan Turner, Galen Cao, Trung Pham, and Rasheed Ibraheem.
 
