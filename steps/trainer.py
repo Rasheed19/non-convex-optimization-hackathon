@@ -189,6 +189,16 @@ def model_trainer(
                 optimizer=base_optimizer,
             )
 
+            optimizer = SAM(
+                model.parameters(),
+                base_optimizer=base_optimizer,
+                rho=optimizer_params["rho"],
+                adaptive=True, 
+                lr=optimizer_params["lr"],
+                momentum=optimizer_params["momentum"],
+                weight_decay=optimizer_params["weight_decay"],
+            )
+
         else:
             scheduler = None
 
