@@ -6,7 +6,6 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torchvision
 from torchvision import transforms
-
 from PIL import Image
 
 from utils.test_helper import score, load_checkpoint, reset, count_parameters
@@ -87,5 +86,7 @@ def model_tester(saved_model_name: str) -> float:
     for sample in test_loader:
         te_correct = test(model, sample)
         avg_te_correct += te_correct / len(test_dataset)
+
+        print(avg_te_correct)
 
     return avg_te_correct * 100
