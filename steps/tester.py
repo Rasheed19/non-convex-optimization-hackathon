@@ -56,7 +56,7 @@ class TestDataset(Dataset):
 
 def model_tester(saved_model_name: str) -> float:
 
-    test_data_path = "./test_data/test.pkl"
+    test_data_path = "./test/test.pkl"
 
     with open(test_data_path, "rb") as file:
         test_data = pickle.load(file)
