@@ -54,10 +54,10 @@ def set_size(
 
 def plot_food_samples(image_meta_data: pd.DataFrame) -> None:
 
-    plt.figure(figsize=(20, 5))
+    plt.figure(figsize=(5, 5))
 
     num_rows = 3
-    num_cols = 8
+    num_cols = 3
 
     for idx in range(num_rows * num_cols):
         random_idx = np.random.randint(0, image_meta_data.shape[0])

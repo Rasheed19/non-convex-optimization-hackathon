@@ -32,4 +32,4 @@ optimizers:
     adaptive: True
   
   theopoula: 
-    lr: 0.1
+    lr: 0.01

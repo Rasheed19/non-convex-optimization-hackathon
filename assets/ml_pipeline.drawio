@@ -1,0 +1,73 @@
+<mxfile host="65bd71144e">
+    <diagram id="vjSvJy3HgOgSqv3eGNM-" name="Page-1">
+        <mxGraphModel dx="1280" dy="737" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Data loading" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Palatino;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Data preprocessing" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Palatino;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="140" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="Rotation, Cropping, and Normalization" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Palatino;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="440" y="130" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="" style="edgeStyle=none;html=1;endArrow=baseDash;endFill=0;fontFamily=Palatino;fontSize=12;" edge="1" parent="1" source="6" target="18">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="Model training" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Palatino;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="250" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Used different optimizers: SGD, variants of Adam, and variants of SGLD" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Palatino;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="440" y="240" width="150" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Model evaluation" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Palatino;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="360" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="Used MobileNetV2 architecture (3.4 million parameters) with Cross entropy loss" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Palatino;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="230" width="130" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="Evaluate model on test data using accuracy metric" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Palatino;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="440" y="354" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="" style="shape=flexArrow;endArrow=classic;html=1;endWidth=7;endSize=4.44;fontFamily=Palatino;fontSize=12;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="319.5" y="100" as="sourcePoint"/>
+                        <mxPoint x="319.5" y="130" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="27" value="" style="shape=flexArrow;endArrow=classic;html=1;endWidth=7;endSize=4.44;fontFamily=Palatino;fontSize=12;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="319.5" y="210" as="sourcePoint"/>
+                        <mxPoint x="319.5" y="240" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="29" value="" style="shape=flexArrow;endArrow=classic;html=1;endWidth=7;endSize=4.44;fontFamily=Palatino;fontSize=12;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="319.5" y="320" as="sourcePoint"/>
+                        <mxPoint x="319.5" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="33" value="" style="edgeStyle=none;html=1;endArrow=baseDash;endFill=0;fontFamily=Palatino;fontSize=12;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="440" y="279.5" as="sourcePoint"/>
+                        <mxPoint x="380" y="279.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="34" value="" style="edgeStyle=none;html=1;endArrow=baseDash;endFill=0;fontFamily=Palatino;fontSize=12;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="440" y="383.5" as="sourcePoint"/>
+                        <mxPoint x="380" y="383.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="36" value="" style="edgeStyle=none;html=1;endArrow=baseDash;endFill=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontFamily=Palatino;fontSize=12;" edge="1" parent="1" target="3">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="440" y="170" as="sourcePoint"/>
+                        <mxPoint x="400" y="170" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
