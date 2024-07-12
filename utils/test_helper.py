@@ -1,6 +1,7 @@
 import random
 import torch
 import numpy as np
+from steps.trainer import create_model
 
 
 def sigmoid(x):
@@ -19,9 +20,8 @@ def load_checkpoint(filepath, device):
     # checkpoint = torch.load(filepath)
     # model = checkpoint['model']
     # model.load_state_dict(checkpoint['model_state_dict'])
-    # model = torch.nn.Module(*args, **kwargs)
-    # model.load_state_dict(torch.load(filepath))
-    model = torch.load(filepath)
+    model = create_model()
+    model.load_state_dict(torch.load(filepath))
     model = model.to(device)
 
     return model
