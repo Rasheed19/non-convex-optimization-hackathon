@@ -1,6 +1,6 @@
 import click
 
-from pipelines import eda_pipeline, training_pipeline
+from pipelines import eda_pipeline, training_pipeline, inference_pipeline
 from utils.constants import ROOT_DIR
 from utils.helper import load_yaml_file
 
@@ -24,6 +24,21 @@ from utils.helper import load_yaml_file
     default=False,
     help="""If given, only eda pipeline will be 
     run.
+        """,
+)
+@click.option(
+    "--only-inference",
+    is_flag=True,
+    default=False,
+    help="""If given, only inference pipeline will be 
+    run.
+        """,
+)
+@click.option(
+    "--saved-model-name",
+    default=None,
+    help="""Name of the saved model to use for inference.
+    Default to None.
         """,
 )
 @click.option(
@@ -61,6 +76,8 @@ from utils.helper import load_yaml_file
 def main(
     exp_name: str = "default-exp",
     only_eda: bool = False,
+    only_inference: bool = False,
+    saved_model_name: str | None = None,
     device: str = "cpu",
     optimizer_name: str = "adam",
     batch_size: int = 32,
@@ -71,6 +88,11 @@ def main(
 
     if only_eda:
         eda_pipeline()
+
+        return None
+
+    if only_inference and saved_model_name is not None:
+        inference_pipeline(saved_model_name=saved_model_name)
 
         return None
 
