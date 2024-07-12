@@ -33,3 +33,4 @@ optimizers:
   
   theopoula: 
     lr: 0.01
+    eps: 0.01
