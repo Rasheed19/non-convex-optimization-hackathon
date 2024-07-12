@@ -17,14 +17,11 @@ def count_parameters(model):
 
 
 def load_checkpoint(filepath, device):
-    # checkpoint = torch.load(filepath)
-    # model = checkpoint['model']
-    # model.load_state_dict(checkpoint['model_state_dict'])
-
-    model = create_model()
-    model.load_state_dict(torch.load(filepath), strict=False)
-    # model.eval()
-    model = model.to(device)
+    model = create_model().to(device)
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!\n\n")
+        model = nn.DataParallel(model)
+    model.load_state_dict(torch.load(filepath))
 
     return model
 

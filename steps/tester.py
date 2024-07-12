@@ -90,4 +90,4 @@ def model_tester(saved_model_name: str) -> float:
 
     avg_te_correct = avg_te_correct / len(test_dataset)
 
-    return avg_te_correct * 100
+    return avg_te_correct
