@@ -19,8 +19,10 @@ optimizers:
     momentum: 0.9
 
   sam:
-    lr: 0.01
-    rho: 0.05
+    lr: 0.001
+    rho: 2
+    momentum: 0.9
+    weight_decay: 1e-5
 
   gsam:
     lr: 0.1

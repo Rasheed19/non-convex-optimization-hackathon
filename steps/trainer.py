@@ -170,11 +170,25 @@ def model_trainer(
         )
 
         if optimizer_name == "sam":
-            scheduler = StepLR(
-                optimizer=optimizer,
-                learning_rate=optimizer_params["lr"],
-                total_epochs=epochs,
-            )  # FIXME: I am not sure what this schedular does of SAM implementation
+            base_optimizer = SGD(
+                model.parameters(),
+                lr=optimizer_params["lr"],
+                momentum=optimizer_params["momentum"],
+                weight_decay=optimizer_params["weight_decay"],
+            )
+            # scheduler = StepLR(
+            #     optimizer=optimizer,
+            #     learning_rate=optimizer_params["lr"],
+            #     total_epochs=epochs,
+            # )  # FIXME: I am not sure what this schedular does of SAM implementation
+
+            scheduler = CosineScheduler(
+                T_max=10,
+                max_value=optimizer_params["lr"],
+                min_value=0,
+                optimizer=base_optimizer,
+            )
+
         else:
             scheduler = None
 

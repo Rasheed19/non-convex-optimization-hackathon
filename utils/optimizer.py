@@ -51,7 +51,7 @@ class SAM(Optimizer):
         https://github.com/davda54/sam/blob/main/sam.py
     """
 
-    def __init__(self, params, base_optimizer=SGD, rho=0.05, adaptive=False, **kwargs):
+    def __init__(self, params, base_optimizer=SGD, rho=2, adaptive=False, **kwargs):
         assert rho >= 0.0, f"Invalid rho, should be non-negative: {rho}"
 
         defaults = dict(rho=rho, adaptive=adaptive, **kwargs)
