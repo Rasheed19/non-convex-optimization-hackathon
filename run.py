@@ -53,7 +53,8 @@ from utils.helper import load_yaml_file
     "--optimizer-name",
     default="adam",
     help="""Optimzer to use for training model. Valid options
-    are 'adam', 'sgd'...
+    are 'adam', 'sgd', 'sgld', 'sam', 'gsam', 'adamax', 
+    'adamw', and 'theopoula'.
     Default to 'adam'.
         """,
 )
