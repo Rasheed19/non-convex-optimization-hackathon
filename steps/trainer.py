@@ -48,7 +48,7 @@ def create_model() -> nn.Module:
     )
     model.classifier = classifier
 
-    print(summary(model, IMAGE_DIMENSION))
+    # print(summary(model, IMAGE_DIMENSION))
 
     return model
 

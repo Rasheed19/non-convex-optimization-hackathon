@@ -22,7 +22,7 @@ def load_checkpoint(filepath, device):
     # model.load_state_dict(checkpoint['model_state_dict'])
 
     model = create_model()
-    model.load_state_dict(torch.load(filepath))
+    model.load_state_dict(torch.load(filepath), strict=False)
     # model.eval()
     model = model.to(device)
 
