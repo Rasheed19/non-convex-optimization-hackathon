@@ -21,13 +21,9 @@ def load_checkpoint(filepath, device):
     # model = checkpoint['model']
     # model.load_state_dict(checkpoint['model_state_dict'])
 
-    checkpoint = torch.load(filepath)
-    model = checkpoint["model"]
-
-    model.load_state_dict(checkpoint["model_state_dict"])
-
-    # model = create_model()
-    # model.load_state_dict(torch.load(filepath))
+    model = create_model()
+    model.load_state_dict(torch.load(filepath))
+    # model.eval()
     model = model.to(device)
 
     return model
